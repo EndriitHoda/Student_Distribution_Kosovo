@@ -56,6 +56,13 @@ datasets = {
     "https://askdata.rks-gov.net/api/v1/sq/ASKdata/Education/2 Educational staff/edu16.px": "dataset_stafi_akademik.csv",
     "https://askdata.rks-gov.net/api/v1/sq/ASKdata/Education/2 Educational staff/edu19.px": "dataset_stafi_administrativ.csv",
     "https://askdata.rks-gov.net/api/v1/sq/ASKdata/Education/2 Educational staff/edu21.px": "dataset_stafi_ndihmes.csv",
+    "https://askdata.rks-gov.net/api/v1/sq/ASKdata/Education/5 Learning conditions/edu26.px": "dataset_raportet_nxenes_staf.csv",
+    "https://askdata.rks-gov.net/api/v1/sq/ASKdata/Education/6 Information on social and family status of pupils/edu28.px": "dataset_statusi_social.csv",
+    "https://askdata.rks-gov.net/api/v1/sq/ASKdata/Household budget survey/1 Overall consumption in Kosovo/hbs01.px": "dataset_konsumi_i_pergjithshem.csv",
+    "https://askdata.rks-gov.net/api/v1/sq/ASKdata/Environment/Uji/tab14.px": "dataset_uji_humbur.csv",
+    "https://askdata.rks-gov.net/api/v1/sq/ASKdata/Population/Births and deaths/birthsDeathsHistory.px": "dataset_lindjet_vdekjet.csv",
+    "https://askdata.rks-gov.net/api/v1/sq/ASKdata/Population/Estimate, projection and structure of population/Population projection/Population projection, 2011-2061/tab1vMesem.px": "dataset_populsia_with_prediction.csv",
+    "https://askdata.rks-gov.net/api/v1/sq/ASKdata/ICT/ICT in Households/TIK1point1.px": "dataset_qasja_ne_internet.csv"
 }
 
 # Iterate through the dictionary
