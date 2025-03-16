@@ -26,7 +26,7 @@ Studentët që kanë marrë pjesë në këtë projekt janë:
 - Lorik Mustafa
 - Meriton Kryeziu
 
-## Përshkrimi i Dataseteve
+## Burimi i Dataseteve
 
 Datasetet që do të përdoren janë marrë nga ASK (Agjencia e Statistikave të Kosovës) dhe përmbajnë të dhëna nga e njëjta periudhë kohore. Këto datasetë kanë korrelacion dhe ndikojnë njëri-tjetrin, prandaj kemi vendosur t'i përdorim si burime për këtë projekt.
 
@@ -54,6 +54,8 @@ for url, csv_name in datasets.items():
 ```
 
 ## Përshkrimi i Dataseteve
+
+Dataseti kryesor përmban gjithsej 2,449 rekorde me 7 atribute. Datasetet relevante kontekstuale kanë një numër të ndryshëm rekordesh dhe atributesh, por gjithmonë përfshijnë periudhën kohore, komunat dhe vitet e regjistruara.
 
 Përshkrimi i datasetet dhe tipet e të dhënave:
 - **Numri i nxënësve për komuna** 
