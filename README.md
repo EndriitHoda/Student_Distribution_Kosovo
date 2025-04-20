@@ -19,7 +19,7 @@
 
 Ky repository përdoret për qëllime studimore në fushën e Machine Learning, për një analizë mbi arsimin ne Kosove duke perfshire nxenesat, stafin akademik dhe stafin administrativ ne komunat e Republikes se Kosoves.
 
-## Pjesëmarrësit në Projekt
+    ## Pjesëmarrësit në Projekt
 
 Studentët që kanë marrë pjesë në këtë projekt janë:
 - Endrit Hoda
@@ -197,3 +197,131 @@ nxenes_staf_df["vlera"] = nxenes_staf_df.groupby("treguesi")["vlera"].transform(
 
 nxenes_staf_df.to_csv("./cleaned_datasets/dataset_raportet_nxenes_staf.csv", index=False)
 ```
+
+# Faza e dytë: Trajnimi e modelit
+Gjatë kësaj faze, grupi ynë ka vendosur të krijojë dhe të trajnojë modele të ndryshme të Machine Learning (ML) mbi datasetin që përshkruan shpërndarjen e studentëve në Kosovë. Qëllimet tona kryesore janë:
+
+- Parashikimi i numrit të studentëve në qytete të ndryshme të Kosovës për pesë vitet e ardhshme.
+
+- Gjenerimi i klasterëve të ndryshëm për të analizuar shpërndarjen aktuale të studentëve.
+
+- Vizualizimi i shkallëzueshmërisë së numrit të studentëve në komuna të ndryshme përgjatë viteve të kaluara dhe për të ardhmen.
+
+## Modelet dhe Algoritmet e Aplikuara
+Në total janë trajnuar 5 modele me algoritme të ndryshme të ML, prej të cilave:
+
+- 3 Supervised: Random Forest, XGBoost, ARIMA
+
+- 2 Unsupervised: K-Means Clustering, DBSCAN + t-SNE
+
+### 1. Random Forest (Supervised)
+- Është një grumbull i pemëve vendimmarrëse.
+
+- I përshtatshëm për të dhëna si numerike ashtu edhe kategorike.
+
+- Kap marrëdhënie jo-lineare ndërmjet variablave dhe ndërveprime komplekse si “Gjinia” me “Niveli Akademik”.
+
+- I qëndrueshëm ndaj noises dhe overfiting të modelit.
+
+Avantazhe ndaj Regresionit Logjistik dhe SVM:
+
+- Nuk ka nevojë për transformim të dhënash në formë numerike si regresioni logjistik.
+
+- Është më i thjeshtë për tu trajnuar dhe më i përshtatshëm për dataset-e të përmasave mesatare krahasuar me SVM.
+
+### 2. XGBoost (Supervised)
+- Algoritëm i fuqishëm që ndërton pemë vendimmarrëse në mënyrë graduale.
+
+- Përfshin mekanizma të rregullimit (regularization) për të shmangur mbingarkesën.
+
+- I trajton më mirë të dhënat me mungesa, ato kategorike dhe rastet me pabarazi klasash.
+
+- Jep rëndësinë e karakteristikave (feature importance), duke ndihmuar në interpretimin e modelit.
+
+Avantazhe ndaj Rrjeteve Neurale:
+
+- Nuk kërkon shumë të dhëna.
+
+- Trajnohet më shpejt dhe është më i kuptueshëm.
+
+- I optimizuar për të dhëna tabelare si ato në dataset-in tonë.
+
+### 3. ARIMA (Model Kohor)
+- I përshtatshëm për parashikimin e “Numrit të Nxënësve” në seri kohore.
+
+- Mund të aplikohet veçmas për çdo komunë, nivel akademik etj.
+
+- Kap trendet dhe sezonalitetin në të dhënat vjetore.
+
+Avantazhe ndaj LSTM dhe Prophet:
+
+- Më i thjeshtë dhe më i kuptueshëm për dataset-e të vogla.
+
+- Jep më shumë kontroll dhe interpretueshmëri statistikore.
+
+### 4. K-Means Clustering (Unsupervised)
+- I përshtatshëm për segmentimin e komunave me profile të ngjashme arsimore.
+
+- Kërkon kodim të variablave kategorikë për të funksionuar siç duhet.
+
+- Ndihmon në krijimin e politikave arsimore të bazuara në të dhëna.
+
+Avantazhe ndaj Klasifikimit Hierarkik:
+
+- Më i shpejtë për dataset-e të mëdha.
+
+- Më i lehtë për t’u interpretuar dhe vizualizuar.
+
+### 5. DBSCAN + t-SNE (Unsupervised + Vizualizim)
+- DBSCAN krijon klastra me forma jo të rregullta dhe zbulon të dhëna jonormale.
+
+- Nuk ka nevojë të caktohet numri i klasave si tek K-Means.
+
+- t-SNE zvogëlon dimensionet për vizualizim në 2D/3D duke shfaqur më qartë strukturat e fshehura të të dhënave.
+
+Avantazhe ndaj PCA + K-Means:
+
+- t-SNE është metodë jo-lineare që shfaq më mirë ndarjet natyrore të të dhënave.
+
+- DBSCAN është më efektiv në identifikimin e klasave të pazakonta ose “outliers”.
+
+## Strategjitë e Përdorura për Përmirësim të Modeleve
+- Në algoritmet si Random Forest dhe XGBoost është përdorur data augmentation për të rritur përformancën në ndarjen test/train.
+
+- Të gjitha modelet janë testuar dhe vlerësuar me metrika të ndryshme:
+
+Metrikat për vlerësimin e modeleve regresive:
+- R² Score (vlerësim i përputhshmërisë së modelit)
+
+- Mean Absolute Error (MAE)
+
+- Mean Squared Error (MSE)
+
+- Root Mean Squared Error (RMSE)
+
+- Cross-Validated R² Score
+
+## Krahasimi i Modeleve dhe Performanca
+Pas testimeve dhe krahasimeve të rezultateve:
+
+XGBoost i optimizuar (tuned) ka performuar më mirë se Random Forest dhe versioni bazik i XGBoost.
+```
+| **Metric** | **Untuned XGBoost** | **Tuned XGBoost** | **Random Forest** | **Best**          |
+|------------|---------------------|-------------------|-------------------|-------------------|
+| R²         | 0.96                | 0.97              | 0.97              | Tie               |
+| MAE        | 270.56              | 170.81            | 128.56            | Random Forest     |
+| MSE        | 392,776.03          | 273,361.44        | 300,765.91        | Tuned XGBoost     |
+| RMSE       | 626.72              | 522.84            | 548.42            | Tuned XGBoost     |
+```
+ARIMA ka treguar performancë shumë të mirë vizuale dhe përputhje të lartë ndërmjet të dhënave të trajnimit dhe testimit.
+Rezultatet e ARIMA (2022–2023):
+```
+MAE: 1618.84
+
+RMSE: 1644.46
+
+R² Score: 0.965
+```
+Modelet K-Means dhe DBSCAN tregojnë ndarje të qartë të të dhënave në klasterë të veçantë.
+
+Për çdo klaster është analizuar ndarja sipas gjinisë, komunës, moshës dhe nivelit akademik.
