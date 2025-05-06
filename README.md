@@ -324,4 +324,8 @@ R² Score: 0.965
 ```
 Modelet K-Means dhe DBSCAN tregojnë ndarje të qartë të të dhënave në klasterë të veçantë.
 
+![dbscan.png](dbscan.png)
+
+![kmeans.png](kmeans.png)
+
 Për çdo klaster është analizuar ndarja sipas gjinisë, komunës, moshës dhe nivelit akademik.
