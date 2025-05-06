@@ -16,6 +16,7 @@ for col in ['Komuna', 'Niveli Akademik', 'Mosha', 'Gjinia']:
     df[col + '_encoded'] = le.fit_transform(df[col])
     label_encoders[col] = le
 
+
 def augment_data(df, n=2):
     df_aug = df.copy()
     for _ in range(n):
@@ -26,6 +27,7 @@ def augment_data(df, n=2):
         df_aug = pd.concat([df_aug, aug], ignore_index=True)
     return df_aug
 
+
 df_aug = augment_data(df, n=2)
 
 X = df_aug[['Komuna_encoded', 'Viti Akademik', 'Niveli Akademik_encoded', 'Mosha_encoded', 'Gjinia_encoded']]
@@ -33,7 +35,8 @@ y = df_aug['Numri i nxenesve']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-model = RandomForestRegressor(n_estimators=100, random_state=42)
+# 100 root trees with depth 25 to cover all dataset with ~2500 rows
+model = RandomForestRegressor(n_estimators=100, max_depth=25, random_state=42)
 model.fit(X_train, y_train)
 
 y_pred = model.predict(X_test)
@@ -53,6 +56,7 @@ cv_scores = cross_val_score(model, X, y, cv=5, scoring='r2')
 print("\nCross-Validated R² Scores:", np.round(cv_scores, 3))
 print(f"Average R² (CV): {np.mean(cv_scores):.2f}")
 
+
 def safe_encode(encoder, value, column_name):
     try:
         return encoder.transform([value])[0]
@@ -60,6 +64,7 @@ def safe_encode(encoder, value, column_name):
         print(f"\nError: '{value}' is not a valid value for {column_name}.")
         print(f"Valid options are: {list(encoder.classes_)}")
         exit()
+
 
 if __name__ == "__main__":
     print("\nStudent Number Predictor (Regression Mode)\n")
