@@ -43,10 +43,24 @@ param_grid = {
 }
 
 xgb = XGBRegressor(random_state=42)
-grid_search = GridSearchCV(estimator=xgb, param_grid=param_grid,
-                           cv=3, scoring='r2', verbose=1, n_jobs=-1)
 
-grid_search.fit(X_train, y_train)
+grid_search = GridSearchCV(
+    estimator=xgb,
+    param_grid=param_grid,
+    cv=3,
+    scoring='r2',
+    verbose=1,
+    n_jobs=-1,
+    return_train_score=True
+)
+
+grid_search.fit(
+    X_train, y_train,
+    early_stopping_rounds=10,
+    eval_set=[(X_test, y_test)],
+    verbose=False
+)
+
 best_model = grid_search.best_estimator_
 
 y_pred = best_model.predict(X_test)
