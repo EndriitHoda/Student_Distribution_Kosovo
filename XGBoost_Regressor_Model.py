@@ -6,6 +6,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import matplotlib.pyplot as plt
+import json
 
 warnings.filterwarnings('ignore')
 
@@ -63,6 +64,17 @@ print(f"🔹 R² Score: {r2:.2f}")
 print(f"🔹 Mean Absolute Error: {mae:.2f}")
 print(f"🔹 Mean Squared Error: {mse:.2f}")
 print(f"🔹 Root Mean Squared Error: {rmse:.2f}")
+
+results_xgb = {
+    "model": "XGBoost",
+    "r2": r2,
+    "mae": mae,
+    "mse": mse,
+    "rmse": rmse
+}
+
+with open("AlgorithmResults/results_xgb.json", "w") as f:
+    json.dump(results_xgb, f)
 
 cv_scores = cross_val_score(best_model, X, y, cv=5, scoring='r2')
 print("\nCross-Validated R² Scores:", np.round(cv_scores, 3))
