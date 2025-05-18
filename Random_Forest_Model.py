@@ -5,6 +5,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import json
 
 warnings.filterwarnings('ignore')
 
@@ -51,6 +52,17 @@ print(f"R² Score (Accuracy-like): {r2:.2f}")
 print(f"Mean Absolute Error (MAE): {mae:.2f}")
 print(f"Mean Squared Error (MSE): {mse:.2f}")
 print(f"Root Mean Squared Error (RMSE): {rmse:.2f}")
+
+results_rf = {
+    "model": "RandomForest",
+    "r2": r2,
+    "mae": mae,
+    "mse": mse,
+    "rmse": rmse
+}
+
+with open("AlgorithmResults/results_rf.json", "w") as f:
+    json.dump(results_rf, f)
 
 cv_scores = cross_val_score(model, X, y, cv=5, scoring='r2')
 print("\nCross-Validated R² Scores:", np.round(cv_scores, 3))
