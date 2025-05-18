@@ -1,9 +1,10 @@
 import pandas as pd
 import warnings
 import numpy as np
+from matplotlib import pyplot as plt
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import train_test_split, cross_val_score, learning_curve
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import json
 
@@ -61,12 +62,55 @@ results_rf = {
     "rmse": rmse
 }
 
+train_sizes, train_scores, valid_scores = learning_curve(
+    model, X_train, y_train,
+    cv=5,
+    scoring='r2',
+    train_sizes=np.linspace(0.1, 1.0, 10),
+    n_jobs=-1,
+    random_state=42
+)
+
+train_scores_mean = np.mean(train_scores, axis=1)
+train_scores_std = np.std(train_scores, axis=1)
+valid_scores_mean = np.mean(valid_scores, axis=1)
+valid_scores_std = np.std(valid_scores, axis=1)
+
+plt.figure(figsize=(8,6))
+plt.plot(train_sizes, train_scores_mean, 'o-', color='blue', label='Training score')
+plt.fill_between(train_sizes, train_scores_mean - train_scores_std, train_scores_mean + train_scores_std, alpha=0.1, color='blue')
+
+plt.plot(train_sizes, valid_scores_mean, 'o-', color='green', label='Cross-validation score')
+plt.fill_between(train_sizes, valid_scores_mean - valid_scores_std, valid_scores_mean + valid_scores_std, alpha=0.1, color='green')
+
+plt.title('Learning Curve for RandomForestRegressor')
+plt.xlabel('Training Set Size')
+plt.ylabel('R² Score')
+plt.legend(loc='best')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
 with open("AlgorithmResults/results_rf.json", "w") as f:
     json.dump(results_rf, f)
 
 cv_scores = cross_val_score(model, X, y, cv=5, scoring='r2')
 print("\nCross-Validated R² Scores:", np.round(cv_scores, 3))
 print(f"Average R² (CV): {np.mean(cv_scores):.2f}")
+
+def plot_residuals(y_true, y_pred, model_name):
+    residuals = y_true - y_pred
+    plt.figure(figsize=(8,5))
+    plt.scatter(y_pred, residuals, alpha=0.5)
+    plt.hlines(y=0, xmin=min(y_pred), xmax=max(y_pred), colors='r', linestyles='dashed')
+    plt.xlabel('Predicted')
+    plt.ylabel('Residuals (True - Predicted)')
+    plt.title(f'Residual Plot for {model_name}')
+    plt.grid(True)
+    plt.show()
+
+plot_residuals(y_test, y_pred, 'Random Forest')
+# Similarly for XGBoost, replace y_pred with xgb predictions
 
 
 def safe_encode(encoder, value, column_name):
