@@ -4,44 +4,35 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.arima.model import ARIMA
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-from statsmodels.tsa.stattools import adfuller
-
-result = adfuller(train)
-print(f"ADF Statistic: {result[0]}")
-print(f"p-value: {result[1]}")
-
+# Load and prepare data
 df = pd.read_csv("cleaned_dataset.csv")
 df_grouped = df.groupby("Viti Akademik")["Numri i nxenesve"].sum().reset_index()
 df_grouped["Viti Akademik"] = pd.to_datetime(df_grouped["Viti Akademik"], format="%Y")
-
 df_grouped.set_index("Viti Akademik", inplace=True)
 
-t# Use last N points for test set
-test_size = 4
-train = df_grouped.iloc[:-test_size]
-test = df_grouped.iloc[-test_size:]
+# Train-test split
+train = df_grouped.iloc[:-2]
+test = df_grouped.iloc[-2:]
 
-# Perform walk-forward validation
-history = list(train["Numri i nxenesve"])
-predictions = []
+# Fit ARIMA model
+model = ARIMA(train, order=(2, 1, 1), trend='t')
+model_fit = model.fit()
 
-for actual in test["Numri i nxenesve"]:
-    model = ARIMA(history, order=(2, 1, 1))
-    model_fit = model.fit()
-    yhat = model_fit.forecast()[0]
-    predictions.append(yhat)
-    history.append(actual)
+# In-sample prediction (history)
+fitted_values = model_fit.fittedvalues
 
-# Convert predictions to DataFrame with same index as test
-pred_series = pd.Series(predictions, index=test.index)
+# Predict on test set
+pred_test = model_fit.predict(start=len(train), end=len(train) + len(test) - 1, typ='levels')
 
-# Evaluation
-mae = mean_absolute_error(test, pred_series)
-rmse = np.sqrt(mean_squared_error(test, pred_series))
-r2 = r2_score(test, pred_series)
+# Forecast future values
+forecast_steps = 5
+forecast = model_fit.forecast(steps=forecast_steps)
+forecast_index = pd.date_range(start=df_grouped.index[-1] + pd.DateOffset(years=1), periods=forecast_steps, freq='Y')
 
+# Plotting
 plt.figure(figsize=(12, 7))
 plt.plot(train, label='Train Data', marker='o')
+plt.plot(fitted_values, label='Fitted Values (History)', linestyle='--', color='blue')
 plt.plot(test, label='Test Data', marker='o', color='orange')
 plt.plot(pred_test, label='Test Prediction', linestyle='--', marker='x', color='green')
 plt.plot(forecast_index, forecast, label='Forecast (Next 5 Years)', linestyle='--', marker='o', color='red')
@@ -54,6 +45,7 @@ plt.legend()
 plt.tight_layout()
 plt.show()
 
+# Evaluation
 mae = mean_absolute_error(test, pred_test)
 rmse = np.sqrt(mean_squared_error(test, pred_test))
 r2 = r2_score(test, pred_test)
