@@ -1,10 +1,12 @@
 import pandas as pd
 import numpy as np
 import warnings
-from xgboost import XGBRegressor, plot_importance
+from xgboost import XGBRegressor, plot_importance, XGBClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 warnings.filterwarnings('ignore')
@@ -17,6 +19,7 @@ for col in ['Komuna', 'Niveli Akademik', 'Mosha', 'Gjinia']:
     df[col + '_encoded'] = le.fit_transform(df[col])
     label_encoders[col] = le
 
+
 def augment_data(df, n=2):
     df_aug = df.copy()
     for _ in range(n):
@@ -26,6 +29,7 @@ def augment_data(df, n=2):
         aug['Numri i nxenesve'] = aug['Numri i nxenesve'].clip(lower=0)
         df_aug = pd.concat([df_aug, aug], ignore_index=True)
     return df_aug
+
 
 df_aug = augment_data(df, n=2)
 
@@ -43,13 +47,28 @@ param_grid = {
 }
 
 xgb = XGBRegressor(random_state=42)
-grid_search = GridSearchCV(estimator=xgb, param_grid=param_grid,
-                           cv=3, scoring='r2', verbose=1, n_jobs=-1)
+
+grid_search = GridSearchCV(
+    estimator=xgb,
+    param_grid=param_grid,
+    cv=3,
+    scoring='r2',
+    verbose=1,
+    n_jobs=-1,
+    return_train_score=True
+)
 
 grid_search.fit(X_train, y_train)
-best_model = grid_search.best_estimator_
 
-y_pred = best_model.predict(X_test)
+print("Best params:", grid_search.best_params_)
+print("Best score:", grid_search.best_score_)
+
+final_model = XGBRegressor(**grid_search.best_params_, random_state=42)
+final_model.fit(X_train, y_train)
+
+# best_model = grid_search.best_estimator_
+
+y_pred = final_model.predict(X_test)
 mae = mean_absolute_error(y_test, y_pred)
 mse = mean_squared_error(y_test, y_pred)
 rmse = np.sqrt(mse)
@@ -64,14 +83,15 @@ print(f"🔹 Mean Absolute Error: {mae:.2f}")
 print(f"🔹 Mean Squared Error: {mse:.2f}")
 print(f"🔹 Root Mean Squared Error: {rmse:.2f}")
 
-cv_scores = cross_val_score(best_model, X, y, cv=5, scoring='r2')
+cv_scores = cross_val_score(final_model, X, y, cv=5, scoring='r2')
 print("\nCross-Validated R² Scores:", np.round(cv_scores, 3))
 print(f"Average R² (CV): {np.mean(cv_scores):.2f}")
 
 plt.figure(figsize=(10, 6))
-plot_importance(best_model, importance_type='gain', max_num_features=10, title="Feature Importance")
+plot_importance(final_model, importance_type='gain', max_num_features=10, title="Feature Importance")
 plt.tight_layout()
 plt.show()
+
 
 def safe_encode(encoder, value, column_name):
     try:
@@ -80,6 +100,7 @@ def safe_encode(encoder, value, column_name):
         print(f"\nError: '{value}' is not valid for {column_name}.")
         print(f"Valid options: {list(encoder.classes_)}")
         exit()
+
 
 if __name__ == "__main__":
     print("\nPredict Number of Students in Future (Tuned XGBoost)\n")
@@ -102,6 +123,6 @@ if __name__ == "__main__":
     gjinia_enc = safe_encode(label_encoders['Gjinia'], gjinia, "Gjinia")
 
     input_features = [[komuna_enc, year, niveli_enc, mosha_enc, gjinia_enc]]
-    prediction = best_model.predict(input_features)[0]
+    prediction = final_model.predict(input_features)[0]
 
     print(f"\nEstimated number of students in {komuna} for {year}: {int(prediction)}")
