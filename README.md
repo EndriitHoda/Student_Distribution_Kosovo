@@ -305,14 +305,14 @@ Metrikat për vlerësimin e modeleve regresive:
 Pas testimeve dhe krahasimeve të rezultateve:
 
 XGBoost i optimizuar (tuned) ka performuar më mirë se Random Forest dhe versioni bazik i XGBoost.
-```
+
 | **Metric** | **Untuned XGBoost** | **Tuned XGBoost** | **Random Forest** | **Best**          |
 |------------|---------------------|-------------------|-------------------|-------------------|
 | R²         | 0.96                | 0.97              | 0.97              | Tie               |
 | MAE        | 270.56              | 170.81            | 128.56            | Random Forest     |
 | MSE        | 392,776.03          | 273,361.44        | 300,765.91        | Tuned XGBoost     |
 | RMSE       | 626.72              | 522.84            | 548.42            | Tuned XGBoost     |
-```
+
 ARIMA ka treguar performancë shumë të mirë vizuale dhe përputhje të lartë ndërmjet të dhënave të trajnimit dhe testimit.
 Rezultatet e ARIMA (2022–2023):
 ```
@@ -329,3 +329,60 @@ Modelet K-Means dhe DBSCAN tregojnë ndarje të qartë të të dhënave në klas
 ![kmeans.png](kmeans.png)
 
 Për çdo klaster është analizuar ndarja sipas gjinisë, komunës, moshës dhe nivelit akademik.
+
+# Faza e tretë: Ritrajnimi dhe permiresimi
+Në këtë fazë, fokusimi ynë është në analizimin e performancës së modeleve të trajnuara, interpretimin e rezultateve, dhe nxjerrjen e përfundimeve praktike për optimizimin e alokimit të burimeve në arsimin e Kosovës.
+
+## Analiza e Performancës së Modeleve Regresive
+
+Për të përfaqësuar më mirë performancën e modeleve regresive të trajnuara, është krijuar një grafik krahasues që tregon performancën e pesë modeleve: **Random Forest**, **Neural Network**, **XGBoost**, **CNN**, dhe **LSTM**. Krahasimi është bërë bazuar në metrikat e zakonshme të vlerësimit të regresionit:
+
+* **R² Score** – Shkalla e përputhshmërisë së modelit me të dhënat reale (sa më afër 1, aq më mirë).
+* **MAE (Mean Absolute Error)** – Gabimi mesatar absolut.
+* **MSE (Mean Squared Error)** – Gabimi mesatar katror (në grafik është pjesëtuar me 1000).
+* **RMSE (Root Mean Squared Error)** – Rrënja katrore e MSE.
+
+![comparison_plot.png](comparison_plot.png)
+
+### Të dhenat nga grafiku:
+
+| Modeli         | R² Score | MAE    | MSE (×1000) | RMSE   |
+|----------------|----------|--------|-------------|--------|
+| Random Forest  | 0.98     | 119.03 | 226.78      | 476.21 |
+| Neural Network | 0.97     | 136.00 | 314.59      | 560.88 |
+| XGBoost        | 0.98     | 135.29 | 196.67      | 443.47 |
+| CNN            | 0.95     | 286.59 | 483.96      | 695.67 |
+| LSTM           | 0.97     | 160.48 | 324.90      | 570.00 |
+
+### Interpretim:
+
+* **XGBoost** performon më mirë në aspektin e gabimit mesatar katror (MSE) dhe RMSE, duke qenë gjithashtu ndër më të saktët sipas R² Score.
+* **Random Forest** ka MAE më të ulët nga të gjithë modelet, dhe gjithashtu një R² të lartë, duke e bërë atë shumë të qëndrueshëm.
+* **Neural Network** dhe **LSTM** kanë performancë të pranueshme, por pak më të dobët në krahasim me modelet tradicionale si XGBoost dhe RF.
+* **CNN**, megjithëse është model kompleks, ka performuar më dobët në të gjitha metrikat, duke sugjeruar që nuk është modeli më i përshtatshëm për këtë lloj të dhënash.
+
+### Lakorja e mesimit per modelet RF dhe XGB
+
+Grafet e paraqitura tregojnë performancën e modeleve Random Forest dhe XGBoost gjatë rritjes së numrit të pemëve (estimators). Në secilin grafik, paraqiten dy lakore:
+
+* Trajnimi (Training R² Score) – Tregon sa mirë modeli mëson të dhënat gjatë procesit të trajnimit.
+
+* Validimi (Cross-Validation R² Score) – Tregon sa mirë modeli përgjithësohet në të dhëna të reja, duke përdorur vlerësim me ndarje të të dhënave (cross-validation).
+
+![learning_curve_rf.png](learning_curve_rf.png)
+![learning_curve_xgb.png](learning_curve_xgb.png)
+
+### Përmbledhje e Grafikëve të Rezidualëve (Residual Plots)
+
+Grafikët e rezidualëve paraqesin diferencën midis vlerave të vëzhguara dhe vlerave të parashikuara nga modeli, ku reziduali llogaritet si:
+
+$\text{Reziduali} = \text{Vlera reale} - \text{Vlera e parashikuar}$
+
+Në këto grafikë, çdo pikë përfaqëson një parashikim individual, ndërsa vija horizontale në nivelin zero tregon pikërisht parashikimin e saktë. Një shpërndarje e rastësishme dhe simetrike e rezidualëve rreth kësaj vije tregon se modeli ka përshtatur mirë të dhënat dhe nuk ekziston ndonjë paragjykim sistematik (bias).
+
+![residual_plot_rf.png](residual_plot_rf.png)
+![residual_plot_xgb.png](residual_plot_xgb.png)
+
+### Përfundim:
+
+Modelet **XGBoost** dhe **Random Forest** dalin si zgjedhjet më të mira për dataset-in tonë. Ato ofrojnë balancën më të mirë ndërmjet saktësisë dhe gabimeve të ulëta. Modelet më të ndërlikuara si **CNN** dhe **LSTM**, të cilat zakonisht performojnë mirë në seri kohore ose të dhëna me strukturë komplekse, nuk rezultuan efektive në këtë kontekst.

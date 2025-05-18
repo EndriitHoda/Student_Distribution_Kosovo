@@ -65,6 +65,65 @@ print("Best score:", grid_search.best_score_)
 final_model = XGBRegressor(**grid_search.best_params_, random_state=42)
 final_model.fit(X_train, y_train)
 
+# Plot R² over boosting rounds
+train_r2_scores = []
+test_r2_scores = []
+cv_r2_scores = []
+
+n_rounds = 200  # You can adjust based on how long you want to track
+
+temp_model = XGBRegressor(
+    n_estimators=1,  # we'll manually increase this
+    max_depth=grid_search.best_params_['max_depth'],
+    learning_rate=grid_search.best_params_['learning_rate'],
+    subsample=grid_search.best_params_['subsample'],
+    colsample_bytree=grid_search.best_params_['colsample_bytree'],
+    random_state=42
+)
+
+# Choose steps to plot up to the best number of estimators
+step_size = max(1, grid_search.best_params_['n_estimators'] // n_rounds)
+
+for i in range(step_size, grid_search.best_params_['n_estimators'] + 1, step_size):
+    model = XGBRegressor(
+        **{**grid_search.best_params_, 'n_estimators': i},
+        random_state=42,
+        verbosity=0
+    )
+    model.fit(X_train, y_train)
+
+    y_train_pred = model.predict(X_train)
+    train_r2 = r2_score(y_train, y_train_pred)
+    train_r2_scores.append(train_r2)
+
+    cv_r2 = cross_val_score(model, X, y, cv=5, scoring='r2').mean()
+    cv_r2_scores.append(cv_r2)
+
+# Plot
+plt.figure(figsize=(10, 6))
+rounds = list(range(step_size, grid_search.best_params_['n_estimators'] + 1, step_size))
+plt.plot(rounds, train_r2_scores, label='Train R²', color='blue', linewidth=2)
+plt.plot(rounds, cv_r2_scores, label='CV R² (5-fold)', color='orange', linewidth=2)
+
+plt.fill_between(
+    rounds,
+    train_r2_scores,
+    cv_r2_scores,
+    where=(np.array(train_r2_scores) > np.array(cv_r2_scores)),
+    interpolate=True,
+    color='red',
+    alpha=0.1,
+    label='Overfitting Gap'
+)
+
+plt.xlabel('Number of Estimators')
+plt.ylabel('R² Score')
+plt.title('XGBoost Learning Curve (Train vs CV R²)')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
 # best_model = grid_search.best_estimator_
 
 y_pred = final_model.predict(X_test)
@@ -102,6 +161,18 @@ plot_importance(final_model, importance_type='gain', max_num_features=10, title=
 plt.tight_layout()
 plt.show()
 
+def plot_residuals(y_true, y_pred, model_name):
+    residuals = y_true - y_pred
+    plt.figure(figsize=(8,5))
+    plt.scatter(y_pred, residuals, alpha=0.5)
+    plt.hlines(y=0, xmin=min(y_pred), xmax=max(y_pred), colors='r', linestyles='dashed')
+    plt.xlabel('Predicted')
+    plt.ylabel('Residuals (True - Predicted)')
+    plt.title(f'Residual Plot for {model_name}')
+    plt.grid(True)
+    plt.show()
+
+plot_residuals(y_test, y_pred, 'XGBoost')
 
 def safe_encode(encoder, value, column_name):
     try:
